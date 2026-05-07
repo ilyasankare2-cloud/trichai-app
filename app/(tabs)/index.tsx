@@ -393,6 +393,34 @@ function ResultCard({ result, cfg, extra, imageUri }: { result: any; cfg: any; e
       <Text style={s.sectionTitle}>🌱 Variedades comunes</Text>
       <View style={s.badgeRow}>{result.varieties.map((v: string) => <View key={v} style={[s.badge, { borderColor: cfg.color }]}><Text style={[s.badgeText, { color: cfg.color }]}>{v}</Text></View>)}</View>
 
+      {result.visual_traits && (
+        <>
+          <Text style={s.sectionTitle}>🔬 Rasgos visuales</Text>
+          <View style={s.traitsGrid}>
+            <View style={s.traitBox}>
+              <Text style={s.traitLabel}>Tricomas</Text>
+              <Text style={s.traitValue}>{result.visual_traits.trichomes}</Text>
+              <Text style={s.traitSub}>{result.visual_traits.trichome_coverage.toFixed(1)}% cobertura</Text>
+            </View>
+            <View style={s.traitBox}>
+              <Text style={s.traitLabel}>Textura</Text>
+              <Text style={s.traitValue}>{result.visual_traits.texture}</Text>
+              <Text style={s.traitSub}>Rugosidad {result.visual_traits.roughness.toFixed(0)}/100</Text>
+            </View>
+            <View style={s.traitBox}>
+              <Text style={s.traitLabel}>Curación</Text>
+              <Text style={s.traitValue}>{result.visual_traits.cure}</Text>
+              <Text style={s.traitSub}>Brillo {result.visual_traits.brightness.toFixed(0)}%</Text>
+            </View>
+            <View style={s.traitBox}>
+              <Text style={s.traitLabel}>Color base</Text>
+              <View style={[s.colorDot, { backgroundColor: `rgb(${result.visual_traits.dominant_color.join(',')})` }]} />
+              <Text style={s.traitSub}>RGB dominante</Text>
+            </View>
+          </View>
+        </>
+      )}
+
       <Text style={s.sectionTitle}>📊 Análisis completo</Text>
       {Object.entries(result.all_probs).map(([key, val]: [string, any]) => (
         <View key={key} style={s.barRow}>
@@ -482,6 +510,13 @@ const s = StyleSheet.create({
   moderationText:     { color: '#aaa', fontSize: 13, lineHeight: 18 },
   tipBox:             { backgroundColor: '#0f1a0f', borderRadius: 10, padding: 12, marginBottom: 8, borderWidth: 1, borderColor: '#2a4a2a' },
   tipText:            { color: '#8BC34A', fontSize: 13, lineHeight: 18 },
+  traitsGrid:         { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
+  traitBox:           { width: '48%', backgroundColor: '#111', borderRadius: 10, padding: 12, alignItems: 'center' },
+  traitLabel:         { color: '#555', fontSize: 10, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 },
+  traitValue:         { color: '#ddd', fontSize: 13, fontWeight: '700', marginBottom: 3 },
+  traitSub:           { color: '#444', fontSize: 11 },
+  colorDot:           { width: 24, height: 24, borderRadius: 12, marginVertical: 4, borderWidth: 1, borderColor: '#333' },
+
   barRow:             { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
   barLabel:           { color: '#666', fontSize: 11, width: 110 },
   barBg:              { flex: 1, height: 5, backgroundColor: '#1a1a1a', borderRadius: 3, overflow: 'hidden' },
