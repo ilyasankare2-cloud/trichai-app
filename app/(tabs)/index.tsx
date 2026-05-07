@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
 import {
@@ -6,52 +7,22 @@ import {
   ScrollView, StyleSheet, Text,
   TouchableOpacity, View,
 } from 'react-native';
+import { LABELS, EXTRA_INFO } from '../shared/labels';
+import { palette } from '../shared/theme';
 
 const API = 'https://phytolens-backend-production.up.railway.app';
+
+// Wrapper that no-ops on web (Haptics throws there)
+const haptic = {
+  light:    () => Platform.OS !== 'web' && Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {}),
+  medium:   () => Platform.OS !== 'web' && Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {}),
+  success:  () => Platform.OS !== 'web' && Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {}),
+  warning:  () => Platform.OS !== 'web' && Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {}),
+  error:    () => Platform.OS !== 'web' && Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {}),
+};
 const HISTORY_KEY = 'trichai_history_v1';
 const MAX_HISTORY = 50;
 
-const LABELS: Record<string, { emoji: string; color: string; text: string }> = {
-  bud:   { emoji: '🌿', color: '#4CAF50', text: 'Cogollo seco' },
-  hash:  { emoji: '🟤', color: '#795548', text: 'Hachís / Resina' },
-  other: { emoji: '🔵', color: '#2196F3', text: 'Otro producto' },
-  plant: { emoji: '🌱', color: '#8BC34A', text: 'Planta viva' },
-};
-
-const EXTRA_INFO: Record<string, any> = {
-  bud: {
-    effects:     ['Euforia', 'Relajación', 'Creatividad', 'Hambre'],
-    aroma:       ['Terroso', 'Cítrico', 'Pino', 'Dulce'],
-    consumption: ['Pipa', 'Porro', 'Vaporizador', 'Bong'],
-    moderation:  'Empieza con dosis baja. Espera 15 min antes de repetir.',
-    tip:         '💡 El vaporizador preserva mejor los terpenos y reduce el daño pulmonar.',
-    cbd:         '0.1% — 2%',
-  },
-  hash: {
-    effects:     ['Relajación profunda', 'Sedación', 'Analgesia', 'Euforia suave'],
-    aroma:       ['Terroso', 'Especiado', 'Dulce', 'Madera'],
-    consumption: ['Porro mezclado', 'Pipa', 'Hookah', 'Dab'],
-    moderation:  'Alta concentración. Usa cantidades muy pequeñas si eres principiante.',
-    tip:         '💡 El hash marroquí suele tener entre 20-35% THC. El bubble hash puede superar el 50%.',
-    cbd:         '1% — 5%',
-  },
-  other: {
-    effects:     ['Variable según producto', 'Puede ser muy potente'],
-    aroma:       ['Variable'],
-    consumption: ['Dab', 'Vaporizador', 'Oral'],
-    moderation:  'Los extractos son muy concentrados. Dosis mínimas para empezar.',
-    tip:         '💡 El rosin es el extracto más natural: solo presión y calor, sin solventes.',
-    cbd:         'Variable',
-  },
-  plant: {
-    effects:     ['Depende de variedad y fase'],
-    aroma:       ['Verde', 'Herbáceo', 'Floral'],
-    consumption: ['No aplica en esta fase'],
-    moderation:  'Planta en crecimiento. El THC se desarrolla en floración.',
-    tip:         '💡 Las plantas en pre-cosecha tienen los tricomas más visibles y potentes.',
-    cbd:         'Depende de variedad',
-  },
-};
 
 type Screen = 'home' | 'result' | 'history' | 'historyDetail' | 'contribute';
 
@@ -83,21 +54,38 @@ export default function HomeScreen() {
   };
 
   const pickImage = async () => {
+    haptic.light();
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') { Alert.alert('Permiso necesario', 'Necesitamos acceso a tu galería.'); return; }
+    if (status !== 'granted') {
+      haptic.warning();
+      Alert.alert('Permiso necesario', 'Necesitamos acceso a tu galería.');
+      return;
+    }
     const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.8 });
-    if (!res.canceled) { setImage(res.assets[0]); setResult(null); setScreen('home'); }
+    if (!res.canceled) {
+      haptic.success();
+      setImage(res.assets[0]); setResult(null); setScreen('home');
+    }
   };
 
   const takePhoto = async () => {
+    haptic.light();
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') { Alert.alert('Permiso necesario', 'Necesitamos acceso a tu cámara.'); return; }
+    if (status !== 'granted') {
+      haptic.warning();
+      Alert.alert('Permiso necesario', 'Necesitamos acceso a tu cámara.');
+      return;
+    }
     const res = await ImagePicker.launchCameraAsync({ quality: 0.8 });
-    if (!res.canceled) { setImage(res.assets[0]); setResult(null); setScreen('home'); }
+    if (!res.canceled) {
+      haptic.success();
+      setImage(res.assets[0]); setResult(null); setScreen('home');
+    }
   };
 
   const analyze = async () => {
     if (!image) return;
+    haptic.medium();
     setLoading(true);
     try {
       const form = new FormData();
@@ -105,10 +93,12 @@ export default function HomeScreen() {
       const res  = await fetch(`${API}/analyze`, { method: 'POST', body: form });
       const data = await res.json();
       if (!res.ok) {
+        haptic.error();
         Alert.alert('Error', data.detail || 'No se pudo analizar.');
         return;
       }
       if (data.success) {
+        haptic.success();
         setResult(data.result);
         const entry = {
           id:       Date.now(),
@@ -119,8 +109,12 @@ export default function HomeScreen() {
         const updated = [entry, ...history].slice(0, MAX_HISTORY);
         persistHistory(updated);
         setScreen('result');
-      } else Alert.alert('Error', 'No se pudo analizar.');
+      } else {
+        haptic.error();
+        Alert.alert('Error', 'No se pudo analizar.');
+      }
     } catch {
+      haptic.error();
       Alert.alert('Error', 'No se puede conectar con el servidor.');
     } finally {
       setLoading(false);
@@ -142,8 +136,10 @@ export default function HomeScreen() {
       }
       const data = await res.json();
       if (!data.success) throw new Error('rejected');
+      haptic.success();
       setContribSent(true);
     } catch {
+      haptic.error();
       setContribError('No se pudo enviar la foto. Inténtalo de nuevo.');
     } finally {
       setContribLoading(false);
@@ -373,7 +369,7 @@ function ResultCard({ result, cfg, extra, imageUri }: { result: any; cfg: any; e
           <Text style={[s.resultLabel, { color: cfg.color }]}>{result.display}</Text>
           <Text style={s.resultConf}>Confianza: {conf.toFixed(1)}%</Text>
           <View style={s.qualityRow}>
-            <View style={[s.qualityDot, { backgroundColor: conf >= 85 ? '#4CAF50' : conf >= 65 ? '#FF9800' : '#f44336' }]} />
+            <View style={[s.qualityDot, { backgroundColor: conf >= 85 ? palette.green : conf >= 65 ? '#FF9800' : '#f44336' }]} />
             <Text style={s.resultQuality}>Calidad: {result.quality}</Text>
           </View>
         </View>
@@ -455,26 +451,26 @@ function ResultCard({ result, cfg, extra, imageUri }: { result: any; cfg: any; e
 }
 
 const s = StyleSheet.create({
-  container:          { flex: 1, backgroundColor: '#0D0D0D' },
+  container:          { flex: 1, backgroundColor: palette.bg },
   content:            { padding: 20, paddingTop: Platform.OS === 'ios' ? 60 : 40, paddingBottom: 40 },
 
   homeHeader:         { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 },
   title:              { color: '#fff', fontSize: 26, fontWeight: '700' },
   subtitle:           { color: '#555', fontSize: 13, marginTop: 4 },
-  historyBadge:       { backgroundColor: '#1A1A1A', borderRadius: 8, padding: 10, borderWidth: 1, borderColor: '#222' },
+  historyBadge:       { backgroundColor: palette.surface, borderRadius: 8, padding: 10, borderWidth: 1, borderColor: '#222' },
   historyBadgeText:   { color: '#666', fontSize: 13 },
 
   btnRow:             { flexDirection: 'row', gap: 12, marginBottom: 16 },
-  camBtn:             { flex: 1, backgroundColor: '#1A1A1A', borderRadius: 12, padding: 16, alignItems: 'center', borderWidth: 1, borderColor: '#2a2a2a' },
+  camBtn:             { flex: 1, backgroundColor: palette.surface, borderRadius: 12, padding: 16, alignItems: 'center', borderWidth: 1, borderColor: '#2a2a2a' },
   camBtnIcon:         { fontSize: 28, marginBottom: 4 },
   camBtnText:         { color: '#aaa', fontSize: 13 },
   preview:            { width: '100%', height: 260, borderRadius: 12, marginBottom: 16 },
-  analyzeBtn:         { backgroundColor: '#4CAF50', borderRadius: 12, padding: 16, alignItems: 'center', marginBottom: 12 },
+  analyzeBtn:         { backgroundColor: palette.green, borderRadius: 12, padding: 16, alignItems: 'center', marginBottom: 12 },
   analyzeBtnDisabled: { opacity: 0.5 },
   analyzeBtnText:     { color: '#fff', fontSize: 16, fontWeight: '700' },
   secondaryBtn:       { backgroundColor: '#111', borderRadius: 12, padding: 14, alignItems: 'center', marginBottom: 12, borderWidth: 1, borderColor: '#222' },
   secondaryBtnText:   { color: '#555', fontSize: 13 },
-  historyBtnRow:      { backgroundColor: '#1A1A1A', borderRadius: 12, padding: 14, alignItems: 'center', borderWidth: 1, borderColor: '#2a2a2a', marginBottom: 12 },
+  historyBtnRow:      { backgroundColor: palette.surface, borderRadius: 12, padding: 14, alignItems: 'center', borderWidth: 1, borderColor: '#2a2a2a', marginBottom: 12 },
   historyBtnText:     { color: '#666', fontSize: 14 },
   placeholder:        { alignItems: 'center', marginTop: 32, padding: 24 },
   placeholderEmoji:   { fontSize: 48, marginBottom: 16 },
@@ -483,7 +479,7 @@ const s = StyleSheet.create({
   contributeSmallText:{ color: '#444', fontSize: 13, textAlign: 'center' },
 
   backRow:            { marginBottom: 16 },
-  backBtn:            { color: '#4CAF50', fontSize: 15 },
+  backBtn:            { color: palette.green, fontSize: 15 },
   topBar:             { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   topTitle:           { color: '#fff', fontSize: 18, fontWeight: '700' },
   clearBtn:           { color: '#f44336', fontSize: 14 },
