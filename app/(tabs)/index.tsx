@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator, Alert, Image, Platform,
+  ActivityIndicator, Alert, Image, Platform, Share,
   ScrollView, StyleSheet, Text,
   TouchableOpacity, View,
 } from 'react-native';
@@ -275,6 +275,21 @@ export default function HomeScreen() {
     );
   }
 
+  const shareResultNative = async (res: any, cfg: any, extra: any) => {
+    const text = [
+      `🔬 TrichAI — ${res.display}`,
+      `Confianza: ${(res.confidence * 100).toFixed(0)}%  ·  Calidad: ${res.quality}`,
+      `THC estimado: ${res.thc_estimate}% (${res.thc_min}–${res.thc_max}%)`,
+      `CBD típico: ${extra.cbd}`,
+      `Efectos: ${extra.effects.join(', ')}`,
+      res.visual_traits ? `Tricomas: ${res.visual_traits.trichomes}  ·  Textura: ${res.visual_traits.texture}` : '',
+      `\nAnaliza la tuya gratis → trichai.vercel.app`,
+    ].filter(Boolean).join('\n');
+    try {
+      await Share.share({ message: text, title: `TrichAI — ${res.display}` });
+    } catch {}
+  };
+
   // ── RESULT ──
   if (screen === 'result' && result) {
     const cfg   = LABELS[result.label];
@@ -283,6 +298,12 @@ export default function HomeScreen() {
       <ScrollView style={s.container} contentContainerStyle={s.content}>
         <Text style={s.title}>🔬 TrichAI</Text>
         <ResultCard result={result} cfg={cfg} extra={extra} imageUri={image?.uri} />
+        <TouchableOpacity
+          style={[s.analyzeBtn, { backgroundColor: cfg.color }]}
+          onPress={() => shareResultNative(result, cfg, extra)}
+        >
+          <Text style={s.analyzeBtnText}>↑ Compartir resultado</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={s.analyzeBtn} onPress={reset}><Text style={s.analyzeBtnText}>📷 Analizar otra foto</Text></TouchableOpacity>
         <TouchableOpacity style={s.secondaryBtn} onPress={() => setScreen('contribute')}>
           <Text style={s.secondaryBtnText}>¿Resultado incorrecto? Corrígelo →</Text>
