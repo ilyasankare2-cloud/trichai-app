@@ -1,50 +1,44 @@
-# Welcome to your Expo app 👋
+# TrichAI App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Mobile cannabis identifier for Android and iOS. Take a photo or pick from your gallery, get instant AI classification with history that persists between sessions.
 
-## Get started
+[![Expo](https://img.shields.io/badge/Expo-SDK_53-000020)](https://expo.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6)](https://typescriptlang.org)
 
-1. Install dependencies
+## Stack
 
-   ```bash
-   npm install
-   ```
+Expo + React Native + TypeScript. Single screen (`app/(tabs)/index.tsx`) with a screen state machine instead of a navigation stack. History stored in AsyncStorage under `trichai_history_v1`.
 
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Running
 
 ```bash
-npm run reset-project
+npm install
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Scan the QR code with Expo Go. That's it.
 
-## Learn more
+## Screens
 
-To learn more about developing your project with Expo, look at the following resources:
+```
+home → result → (back to home)
+     → contribute
+     → history → historyDetail
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+All screens are conditional renders inside the same component — no navigation library involved.
 
-## Join the community
+## Building for production
 
-Join our community of developers creating universal apps.
+```bash
+npx eas build --platform android --profile production
+npx eas build --platform ios --profile production
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Requires an Expo account and `eas.json` configured. Package ID: `com.yasss0.trichai`
+
+## App details
+
+- Version: 1.0.2
+- Deep link scheme: `trichai://`
+- Permissions used: Camera, Media Library
