@@ -65,16 +65,21 @@ export default function HomeScreen() {
   const [contribLabel, setContribLabel] = useState('');
   const [contribSent, setContribSent]   = useState(false);
   const [contribLoading, setContribLoading] = useState(false);
+  const [contribError, setContribError] = useState('');
 
   useEffect(() => {
-    AsyncStorage.getItem(HISTORY_KEY).then(raw => {
-      if (raw) setHistory(JSON.parse(raw));
-    });
+    AsyncStorage.getItem(HISTORY_KEY)
+      .then(raw => {
+        if (raw) {
+          try { setHistory(JSON.parse(raw)); } catch {}
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const persistHistory = (h: any[]) => {
     setHistory(h);
-    AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(h));
+    AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(h)).catch(() => {});
   };
 
   const pickImage = async () => {
@@ -99,6 +104,10 @@ export default function HomeScreen() {
       form.append('file', { uri: image.uri, type: 'image/jpeg', name: 'photo.jpg' } as any);
       const res  = await fetch(`${API}/analyze`, { method: 'POST', body: form });
       const data = await res.json();
+      if (!res.ok) {
+        Alert.alert('Error', data.detail || 'No se pudo analizar.');
+        return;
+      }
       if (data.success) {
         setResult(data.result);
         const entry = {
@@ -121,12 +130,21 @@ export default function HomeScreen() {
   const contribute = async () => {
     if (!image || !contribLabel) return;
     setContribLoading(true);
+    setContribError('');
     try {
       const form = new FormData();
       form.append('file', { uri: image.uri, type: 'image/jpeg', name: 'photo.jpg' } as any);
       form.append('label', contribLabel);
-      await fetch(`${API}/contribute`, { method: 'POST', body: form }).catch(() => {});
+      const res = await fetch(`${API}/contribute`, { method: 'POST', body: form });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.detail || `Error ${res.status}`);
+      }
+      const data = await res.json();
+      if (!data.success) throw new Error('rejected');
       setContribSent(true);
+    } catch {
+      setContribError('No se pudo enviar la foto. Inténtalo de nuevo.');
     } finally {
       setContribLoading(false);
     }
@@ -137,6 +155,7 @@ export default function HomeScreen() {
     setResult(null);
     setContribLabel('');
     setContribSent(false);
+    setContribError('');
     setScreen('home');
   };
 
@@ -237,6 +256,8 @@ export default function HomeScreen() {
                 </TouchableOpacity>
               ))}
             </View>
+
+            {contribError ? <Text style={s.errorText}>{contribError}</Text> : null}
 
             <TouchableOpacity
               style={[s.analyzeBtn, (!image || !contribLabel || contribLoading) && s.analyzeBtnDisabled]}
@@ -432,6 +453,7 @@ const s = StyleSheet.create({
   labelGrid:          { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
   labelBtn:           { width: '48%', padding: 12, backgroundColor: '#111', borderWidth: 1, borderColor: '#222', borderRadius: 10, alignItems: 'center' },
   labelBtnText:       { color: '#555', fontSize: 13 },
+  errorText:          { color: '#f44336', fontSize: 13, textAlign: 'center', marginBottom: 12 },
   successBox:         { alignItems: 'center', paddingVertical: 32 },
   successTitle:       { color: '#fff', fontSize: 20, fontWeight: '700', marginTop: 12, marginBottom: 6 },
   successSub:         { color: '#555', fontSize: 14, marginBottom: 24 },
