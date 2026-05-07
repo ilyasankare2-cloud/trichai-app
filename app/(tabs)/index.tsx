@@ -7,7 +7,7 @@ import {
   ScrollView, StyleSheet, Text,
   TouchableOpacity, View,
 } from 'react-native';
-import { LABELS, EXTRA_INFO } from '../shared/labels';
+import { LABELS, EXTRA_INFO, CONTRIB_LABELS } from '../shared/labels';
 import { palette } from '../shared/theme';
 
 const API = 'https://phytolens-backend-production.up.railway.app';
@@ -240,15 +240,15 @@ export default function HomeScreen() {
 
             <Text style={s.labelTitle}>¿Qué hay en la foto?</Text>
             <View style={s.labelGrid}>
-              {Object.entries(LABELS).map(([key, val]) => (
+              {Object.entries(CONTRIB_LABELS).map(([key, val]) => (
                 <TouchableOpacity
                   key={key}
                   style={[s.labelBtn, contribLabel === key && { borderColor: val.color }]}
-                  onPress={() => setContribLabel(key)}
+                  onPress={() => { haptic.light(); setContribLabel(key); }}
                 >
-                  <Text style={[s.labelBtnText, contribLabel === key && { color: val.color, fontWeight: '700' }]}>
-                    {val.emoji} {val.text}
-                  </Text>
+                  <Text style={[s.labelBtnEmoji]}>{val.emoji}</Text>
+                  <Text style={[s.labelBtnText, contribLabel === key && { color: val.color, fontWeight: '700' }]}>{val.text}</Text>
+                  <Text style={s.labelBtnHelp}>{val.help}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -290,20 +290,25 @@ export default function HomeScreen() {
   if (screen === 'result' && result) {
     const cfg   = LABELS[result.label];
     const extra = EXTRA_INFO[result.label];
+    const isNotDetected = result.label === 'other';
     return (
       <ScrollView style={s.container} contentContainerStyle={s.content}>
         <Text style={s.title}>🔬 TrichAI</Text>
         <ResultCard result={result} cfg={cfg} extra={extra} imageUri={image?.uri} />
-        <TouchableOpacity
-          style={[s.analyzeBtn, { backgroundColor: cfg.color }]}
-          onPress={() => shareResultNative(result, cfg, extra)}
-        >
-          <Text style={s.analyzeBtnText}>↑ Compartir resultado</Text>
-        </TouchableOpacity>
+        {!isNotDetected && (
+          <TouchableOpacity
+            style={[s.analyzeBtn, { backgroundColor: cfg.color }]}
+            onPress={() => { haptic.light(); shareResultNative(result, cfg, extra); }}
+          >
+            <Text style={s.analyzeBtnText}>↑ Compartir resultado</Text>
+          </TouchableOpacity>
+        )}
         <TouchableOpacity style={s.analyzeBtn} onPress={reset}><Text style={s.analyzeBtnText}>📷 Analizar otra foto</Text></TouchableOpacity>
-        <TouchableOpacity style={s.secondaryBtn} onPress={() => setScreen('contribute')}>
-          <Text style={s.secondaryBtnText}>¿Resultado incorrecto? Corrígelo →</Text>
-        </TouchableOpacity>
+        {!isNotDetected && (
+          <TouchableOpacity style={s.secondaryBtn} onPress={() => setScreen('contribute')}>
+            <Text style={s.secondaryBtnText}>¿Resultado incorrecto? Corrígelo →</Text>
+          </TouchableOpacity>
+        )}
         {history.length > 0 && (
           <TouchableOpacity style={s.historyBtnRow} onPress={() => setScreen('history')}>
             <Text style={s.historyBtnText}>📋 Ver historial ({history.length})</Text>
@@ -358,6 +363,26 @@ export default function HomeScreen() {
 }
 
 function ResultCard({ result, cfg, extra, imageUri }: { result: any; cfg: any; extra: any; imageUri?: string }) {
+  if (result.label === 'other') {
+    return (
+      <View style={[s.result, { borderColor: palette.border }]}>
+        {imageUri && <Image source={{ uri: imageUri }} style={s.resultImage} />}
+        <View style={s.resultHeader}>
+          <Text style={s.resultEmoji}>🚫</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={[s.resultLabel, { color: palette.text }]}>No detecto cannabis</Text>
+            <Text style={s.resultConf}>La foto no parece contener cogollo, hachís ni planta.</Text>
+          </View>
+        </View>
+        <View style={s.notDetectedTipsBox}>
+          <Text style={s.notDetectedTipsTitle}>Para mejorar la detección</Text>
+          <Text style={s.notDetectedTip}>• Acércate al producto, ocupa el centro</Text>
+          <Text style={s.notDetectedTip}>• Buena iluminación, mejor luz natural</Text>
+          <Text style={s.notDetectedTip}>• Enfoque nítido, sin fondo desordenado</Text>
+        </View>
+      </View>
+    );
+  }
   const conf = result.confidence * 100;
   return (
     <View style={[s.result, { borderColor: cfg.color }]}>
@@ -496,8 +521,13 @@ const s = StyleSheet.create({
   contributeInfoText: { color: '#666', fontSize: 13, textAlign: 'center', lineHeight: 20 },
   labelTitle:         { color: '#666', fontSize: 13, marginBottom: 10, marginTop: 4 },
   labelGrid:          { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
-  labelBtn:           { width: '48%', padding: 12, backgroundColor: '#111', borderWidth: 1, borderColor: '#222', borderRadius: 10, alignItems: 'center' },
-  labelBtnText:       { color: '#555', fontSize: 13 },
+  labelBtn:           { width: '48%', padding: 14, backgroundColor: '#111', borderWidth: 1, borderColor: '#222', borderRadius: 10, alignItems: 'center', minHeight: 96 },
+  labelBtnEmoji:      { fontSize: 22, marginBottom: 4 },
+  labelBtnText:       { color: '#aaa', fontSize: 13, fontWeight: '600' },
+  labelBtnHelp:       { color: '#555', fontSize: 11, marginTop: 4, textAlign: 'center', lineHeight: 14 },
+  notDetectedTipsBox: { backgroundColor: '#0d0d0d', borderRadius: 10, padding: 14, marginTop: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)' },
+  notDetectedTipsTitle: { color: palette.text, fontSize: 13, fontWeight: '600', marginBottom: 8 },
+  notDetectedTip:     { color: palette.muted, fontSize: 13, lineHeight: 22 },
   errorText:          { color: '#f44336', fontSize: 13, textAlign: 'center', marginBottom: 12 },
   successBox:         { alignItems: 'center', paddingVertical: 32 },
   successTitle:       { color: '#fff', fontSize: 20, fontWeight: '700', marginTop: 12, marginBottom: 6 },

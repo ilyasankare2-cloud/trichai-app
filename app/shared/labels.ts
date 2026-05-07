@@ -8,8 +8,17 @@ type LabelKey = 'bud' | 'hash' | 'other' | 'plant';
 export const LABELS: Record<LabelKey, { emoji: string; color: string; text: string }> = {
   bud:   { emoji: '🌿', color: palette.green,     text: 'Cogollo seco' },
   hash:  { emoji: '🟤', color: palette.hashBrown, text: 'Hachís / Resina' },
-  other: { emoji: '🔵', color: palette.otherBlue, text: 'Otro producto' },
+  other: { emoji: '🚫', color: palette.muted,     text: 'No es cannabis' },
   plant: { emoji: '🌱', color: palette.plantLime, text: 'Planta viva' },
+};
+
+// Labels users can pick when contributing a photo.
+// 'other' = "this is NOT cannabis" (rejection class).
+export const CONTRIB_LABELS: Record<LabelKey, { emoji: string; color: string; text: string; help: string }> = {
+  bud:   { emoji: '🌿', color: palette.green,     text: 'Cogollo seco', help: 'Flor seca, lista para consumir' },
+  hash:  { emoji: '🟤', color: palette.hashBrown, text: 'Hachís',       help: 'Resina prensada' },
+  plant: { emoji: '🌱', color: palette.plantLime, text: 'Planta viva',  help: 'En crecimiento o floración' },
+  other: { emoji: '🚫', color: palette.muted,     text: 'No aplica',    help: 'Foto sin cannabis: mano, fondo, objeto…' },
 };
 
 interface ExtraInfo {
