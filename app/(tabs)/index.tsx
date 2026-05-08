@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { LABELS, EXTRA_INFO, CONTRIB_LABELS } from '../shared/labels';
 import { palette } from '../shared/theme';
+import { compressImage } from '../shared/compressImage';
 
 const API = 'https://phytolens-backend-production.up.railway.app';
 
@@ -61,10 +62,13 @@ export default function HomeScreen() {
       Alert.alert('Permiso necesario', 'Necesitamos acceso a tu galería.');
       return;
     }
-    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.8 });
+    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 1 });
     if (!res.canceled) {
       haptic.success();
-      setImage(res.assets[0]); setResult(null); setScreen('home');
+      const asset = res.assets[0];
+      const compressedUri = await compressImage(asset);
+      setImage({ ...asset, uri: compressedUri });
+      setResult(null); setScreen('home');
     }
   };
 
@@ -76,10 +80,13 @@ export default function HomeScreen() {
       Alert.alert('Permiso necesario', 'Necesitamos acceso a tu cámara.');
       return;
     }
-    const res = await ImagePicker.launchCameraAsync({ quality: 0.8 });
+    const res = await ImagePicker.launchCameraAsync({ quality: 1 });
     if (!res.canceled) {
       haptic.success();
-      setImage(res.assets[0]); setResult(null); setScreen('home');
+      const asset = res.assets[0];
+      const compressedUri = await compressImage(asset);
+      setImage({ ...asset, uri: compressedUri });
+      setResult(null); setScreen('home');
     }
   };
 
@@ -191,7 +198,16 @@ export default function HomeScreen() {
           <TouchableOpacity onPress={clearHistory}><Text style={s.clearBtn}>Borrar</Text></TouchableOpacity>
         </View>
         {history.length === 0
-          ? <Text style={s.emptyText}>No hay análisis todavía.</Text>
+          ? (
+              <View style={s.emptyHistory}>
+                <Text style={s.emptyHistoryEmoji}>📷</Text>
+                <Text style={s.emptyHistoryTitle}>Aún no has analizado nada</Text>
+                <Text style={s.emptyHistorySub}>Cada análisis se guarda aquí automáticamente.{'\n'}Tu historial vive en este dispositivo.</Text>
+                <TouchableOpacity style={s.emptyHistoryBtn} onPress={() => setScreen('home')}>
+                  <Text style={s.emptyHistoryBtnText}>Analizar mi primera foto →</Text>
+                </TouchableOpacity>
+              </View>
+            )
           : history.map((item: any) => {
               const c = LABELS[item.result.label];
               return (
@@ -279,7 +295,7 @@ export default function HomeScreen() {
       `CBD típico: ${extra.cbd}`,
       `Efectos: ${extra.effects.join(', ')}`,
       res.visual_traits ? `Tricomas: ${res.visual_traits.trichomes}  ·  Textura: ${res.visual_traits.texture}` : '',
-      `\nAnaliza la tuya gratis → trichai.vercel.app`,
+      `\nAnaliza la tuya gratis → https://phytolens-frontend.vercel.app`,
     ].filter(Boolean).join('\n');
     try {
       await Share.share({ message: text, title: `TrichAI — ${res.display}` });
@@ -393,6 +409,9 @@ function ResultCard({ result, cfg, extra, imageUri }: { result: any; cfg: any; e
         <View style={{ flex: 1 }}>
           <Text style={[s.resultLabel, { color: cfg.color }]}>{result.display}</Text>
           <Text style={s.resultConf}>Confianza: {conf.toFixed(1)}%</Text>
+          {conf < 70 && (
+            <Text style={s.lowConfWarning}>⚠️ Confianza baja. Este resultado puede ser incorrecto.</Text>
+          )}
           <View style={s.qualityRow}>
             <View style={[s.qualityDot, { backgroundColor: conf >= 85 ? palette.green : conf >= 65 ? '#FF9800' : '#f44336' }]} />
             <Text style={s.resultQuality}>Calidad: {result.quality}</Text>
@@ -516,6 +535,12 @@ const s = StyleSheet.create({
   historyArrow:       { color: '#333', fontSize: 22 },
   historyDateBig:     { color: '#444', fontSize: 12, marginBottom: 12 },
   emptyText:          { color: '#444', textAlign: 'center', marginTop: 60, fontSize: 15 },
+  emptyHistory:       { alignItems: 'center', paddingVertical: 48, paddingHorizontal: 24 },
+  emptyHistoryEmoji:  { fontSize: 48, marginBottom: 18, opacity: 0.6 },
+  emptyHistoryTitle:  { color: palette.text, fontSize: 17, fontWeight: '600', marginBottom: 8, textAlign: 'center' },
+  emptyHistorySub:    { color: palette.muted, fontSize: 13, lineHeight: 20, textAlign: 'center', marginBottom: 24 },
+  emptyHistoryBtn:    { backgroundColor: 'rgba(48,209,88,0.08)', borderWidth: 1, borderColor: 'rgba(48,209,88,0.4)', borderRadius: 980, paddingHorizontal: 20, paddingVertical: 10 },
+  emptyHistoryBtnText:{ color: palette.green, fontSize: 13, fontWeight: '600' },
 
   contributeInfo:     { backgroundColor: '#111', borderRadius: 8, padding: 12, marginBottom: 20, borderWidth: 1, borderColor: '#222' },
   contributeInfoText: { color: '#666', fontSize: 13, textAlign: 'center', lineHeight: 20 },
@@ -539,6 +564,7 @@ const s = StyleSheet.create({
   resultEmoji:        { fontSize: 40 },
   resultLabel:        { fontSize: 22, fontWeight: '700' },
   resultConf:         { color: '#aaa', fontSize: 13, marginTop: 4 },
+  lowConfWarning:     { color: '#f5a623', fontSize: 12, marginTop: 6, backgroundColor: '#1a1200', borderWidth: 1, borderColor: 'rgba(245,166,35,0.2)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4, alignSelf: 'flex-start' },
   qualityRow:         { flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 6 },
   qualityDot:         { width: 8, height: 8, borderRadius: 4 },
   resultQuality:      { color: '#aaa', fontSize: 12 },
