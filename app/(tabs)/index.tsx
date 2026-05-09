@@ -3,13 +3,19 @@ import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator, Alert, Image, Platform, Share,
+  ActivityIndicator, Alert, Image, LayoutAnimation, Platform, Share,
   ScrollView, StyleSheet, Text,
-  TouchableOpacity, View,
+  TouchableOpacity, UIManager, View,
 } from 'react-native';
 import { LABELS, EXTRA_INFO, CONTRIB_LABELS } from '../shared/labels';
 import { palette } from '../shared/theme';
 import { compressImage } from '../shared/compressImage';
+import { interpretThc } from '../shared/thcInterpretation';
+
+// Enable LayoutAnimation on Android (no-op on iOS)
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 const API = 'https://phytolens-backend-production.up.railway.app';
 
@@ -379,6 +385,17 @@ export default function HomeScreen() {
 }
 
 function ResultCard({ result, cfg, extra, imageUri }: { result: any; cfg: any; extra: any; imageUri?: string }) {
+  const [thcOpen, setThcOpen] = useState(false);
+  const thcDetail = interpretThc(result);
+  const toggleThc = () => {
+    if (!thcDetail) return;
+    LayoutAnimation.configureNext({
+      duration: 280,
+      create:  { type: 'easeInEaseOut', property: 'opacity' },
+      update:  { type: 'easeInEaseOut' },
+    });
+    setThcOpen(o => !o);
+  };
   if (result.label === 'other') {
     return (
       <View style={[s.result, { borderColor: palette.border }]}>
@@ -420,15 +437,41 @@ function ResultCard({ result, cfg, extra, imageUri }: { result: any; cfg: any; e
       </View>
 
       <View style={s.thcRow}>
-        <View style={[s.thcBox, { flex: 1 }]}>
+        <TouchableOpacity
+          activeOpacity={thcDetail ? 0.7 : 1}
+          onPress={toggleThc}
+          disabled={!thcDetail}
+          style={[s.thcBox, { flex: 1, borderWidth: 1, borderColor: thcOpen ? cfg.color + '55' : 'transparent' }]}
+        >
           <Text style={s.thcTitle}>THC típico</Text>
           <Text style={[s.thcValue, { color: cfg.color, fontSize: 19 }]}>{result.thc_min}% — {result.thc_max}%</Text>
-        </View>
+          {thcDetail && (
+            <Text style={s.thcExpandHint}>{thcOpen ? 'Ocultar detalle ▲' : 'Toca para ver detalle ▼'}</Text>
+          )}
+        </TouchableOpacity>
         <View style={[s.thcBox, { flex: 1, marginLeft: 8 }]}>
           <Text style={s.thcTitle}>CBD típico</Text>
           <Text style={[s.thcValue, { color: '#aaa', fontSize: 17 }]}>{extra.cbd}</Text>
         </View>
       </View>
+      {thcDetail && thcOpen && (
+        <View style={[s.thcDetailBox, { borderColor: cfg.color + '33' }]}>
+          {thcDetail.lowConf && (
+            <Text style={s.thcDetailLowConf}>⚠ Confianza baja del modelo. Esta interpretación es orientativa.</Text>
+          )}
+          <Text style={s.thcDetailSection}>RASGOS DETECTADOS</Text>
+          {thcDetail.traits.map(t => (
+            <Text key={t.key} style={s.thcDetailItem}>
+              <Text style={s.thcDetailItemLabel}>{t.label}: </Text>
+              <Text style={[s.thcDetailItemValue, { color: cfg.color }]}>{t.value}</Text>
+              {t.sub && t.sub !== '—' ? <Text style={s.thcDetailItemSub}> · {t.sub}</Text> : null}
+            </Text>
+          ))}
+          <Text style={[s.thcDetailSection, { marginTop: 12 }]}>INTERPRETACIÓN</Text>
+          <Text style={s.thcDetailText}>{thcDetail.interpretation}</Text>
+          <Text style={s.thcDetailDisclaimer}>⚠ Estimación visual. No sustituye análisis de laboratorio.</Text>
+        </View>
+      )}
 
       <Text style={s.description}>{result.description}</Text>
 
@@ -572,6 +615,16 @@ const s = StyleSheet.create({
   thcTitle:           { color: '#666', fontSize: 11, marginBottom: 4 },
   thcValue:           { fontSize: 26, fontWeight: '700' },
   thcRange:           { color: '#444', fontSize: 11, marginTop: 4 },
+  thcExpandHint:      { color: '#555', fontSize: 11, marginTop: 6, letterSpacing: 0.2 },
+  thcDetailBox:       { backgroundColor: '#0a0a0a', borderWidth: 1, borderRadius: 12, padding: 14, marginTop: 8, marginBottom: 14 },
+  thcDetailLowConf:   { color: '#f5a623', fontSize: 12, marginBottom: 12, backgroundColor: '#1a1200', borderWidth: 1, borderColor: 'rgba(245,166,35,0.2)', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 6 },
+  thcDetailSection:   { color: '#555', fontSize: 10, fontWeight: '700', letterSpacing: 0.8, marginBottom: 8 },
+  thcDetailItem:      { color: '#aaa', fontSize: 13, marginBottom: 5, lineHeight: 20 },
+  thcDetailItemLabel: { color: '#888' },
+  thcDetailItemValue: { fontWeight: '700' },
+  thcDetailItemSub:   { color: '#555', fontSize: 12 },
+  thcDetailText:      { color: '#ccc', fontSize: 13, marginBottom: 14, lineHeight: 20 },
+  thcDetailDisclaimer:{ color: '#555', fontSize: 11, fontStyle: 'italic' },
   description:        { color: '#888', fontSize: 13, marginBottom: 12, lineHeight: 20 },
   sectionTitle:       { color: '#666', fontSize: 11, fontWeight: '600', marginBottom: 8, marginTop: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
   badgeRow:           { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
