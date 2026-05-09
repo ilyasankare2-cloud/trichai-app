@@ -421,13 +421,12 @@ function ResultCard({ result, cfg, extra, imageUri }: { result: any; cfg: any; e
 
       <View style={s.thcRow}>
         <View style={[s.thcBox, { flex: 1 }]}>
-          <Text style={s.thcTitle}>THC estimado</Text>
-          <Text style={[s.thcValue, { color: cfg.color }]}>{result.thc_estimate}%</Text>
-          <Text style={s.thcRange}>{result.thc_min}% — {result.thc_max}%</Text>
+          <Text style={s.thcTitle}>THC típico</Text>
+          <Text style={[s.thcValue, { color: cfg.color, fontSize: 19 }]}>{result.thc_min}% — {result.thc_max}%</Text>
         </View>
         <View style={[s.thcBox, { flex: 1, marginLeft: 8 }]}>
           <Text style={s.thcTitle}>CBD típico</Text>
-          <Text style={[s.thcValue, { color: '#aaa', fontSize: 15 }]}>{extra.cbd}</Text>
+          <Text style={[s.thcValue, { color: '#aaa', fontSize: 17 }]}>{extra.cbd}</Text>
         </View>
       </View>
 
