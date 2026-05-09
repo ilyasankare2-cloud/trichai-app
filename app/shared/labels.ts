@@ -3,7 +3,7 @@
 
 import { palette } from './theme';
 
-type LabelKey = 'bud' | 'hash' | 'other' | 'plant';
+export type LabelKey = 'bud' | 'hash' | 'other' | 'plant';
 
 export const LABELS: Record<LabelKey, { emoji: string; color: string; text: string }> = {
   bud:   { emoji: '🌿', color: palette.green,     text: 'Cogollo seco' },

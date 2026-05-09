@@ -7,7 +7,7 @@ import {
   ScrollView, StyleSheet, Text,
   TouchableOpacity, UIManager, View,
 } from 'react-native';
-import { LABELS, EXTRA_INFO, CONTRIB_LABELS } from '../shared/labels';
+import { LABELS, EXTRA_INFO, CONTRIB_LABELS, LabelKey } from '../shared/labels';
 import { palette } from '../shared/theme';
 import { compressImage } from '../shared/compressImage';
 import { interpretThc } from '../shared/thcInterpretation';
@@ -178,8 +178,8 @@ export default function HomeScreen() {
   // ── HISTORY DETAIL ──
   if (screen === 'historyDetail' && selectedHistory) {
     const item = selectedHistory;
-    const cfg  = LABELS[item.result.label];
-    const extra = EXTRA_INFO[item.result.label];
+    const cfg  = LABELS[item.result.label as LabelKey];
+    const extra = EXTRA_INFO[item.result.label as LabelKey];
     return (
       <ScrollView style={s.container} contentContainerStyle={s.content}>
         <TouchableOpacity onPress={() => setScreen('history')} style={s.backRow}>
@@ -215,7 +215,7 @@ export default function HomeScreen() {
               </View>
             )
           : history.map((item: any) => {
-              const c = LABELS[item.result.label];
+              const c = LABELS[item.result.label as LabelKey];
               return (
                 <TouchableOpacity key={item.id} style={[s.historyItem, { borderColor: c.color }]} onPress={() => { setSelectedHistory(item); setScreen('historyDetail'); }}>
                   {item.imageUri && <Image source={{ uri: item.imageUri }} style={s.historyThumb} />}
@@ -310,8 +310,8 @@ export default function HomeScreen() {
 
   // ── RESULT ──
   if (screen === 'result' && result) {
-    const cfg   = LABELS[result.label];
-    const extra = EXTRA_INFO[result.label];
+    const cfg   = LABELS[result.label as LabelKey];
+    const extra = EXTRA_INFO[result.label as LabelKey];
     const isNotDetected = result.label === 'other';
     return (
       <ScrollView style={s.container} contentContainerStyle={s.content}>
@@ -527,8 +527,8 @@ function ResultCard({ result, cfg, extra, imageUri }: { result: any; cfg: any; e
       <Text style={s.sectionTitle}>📊 Análisis completo</Text>
       {Object.entries(result.all_probs).map(([key, val]: [string, any]) => (
         <View key={key} style={s.barRow}>
-          <Text style={s.barLabel}>{LABELS[key].emoji} {LABELS[key].text}</Text>
-          <View style={s.barBg}><View style={[s.barFill, { width: `${(val * 100).toFixed(0)}%` as any, backgroundColor: LABELS[key].color }]} /></View>
+          <Text style={s.barLabel}>{LABELS[key as LabelKey].emoji} {LABELS[key as LabelKey].text}</Text>
+          <View style={s.barBg}><View style={[s.barFill, { width: `${(val * 100).toFixed(0)}%` as any, backgroundColor: LABELS[key as LabelKey].color }]} /></View>
           <Text style={s.barVal}>{(val * 100).toFixed(1)}%</Text>
         </View>
       ))}
