@@ -68,7 +68,7 @@ export default function HomeScreen() {
       Alert.alert('Permiso necesario', 'Necesitamos acceso a tu galería.');
       return;
     }
-    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 1 });
+    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 1 });
     if (!res.canceled) {
       haptic.success();
       const asset = res.assets[0];
