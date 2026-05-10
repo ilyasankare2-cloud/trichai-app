@@ -406,15 +406,15 @@ function ResultCard({ result, cfg, extra, imageUri }: { result: any; cfg: any; e
         <View style={s.resultHeader}>
           <Text style={s.resultEmoji}>🚫</Text>
           <View style={{ flex: 1 }}>
-            <Text style={[s.resultLabel, { color: palette.text }]}>No detecto cannabis</Text>
-            <Text style={s.resultConf}>La foto no parece contener cogollo, hachís ni planta.</Text>
+            <Text style={[s.resultLabel, { color: palette.text }]}>No veo cannabis aquí</Text>
+            <Text style={s.resultConf}>No parece haber cogollo, hachís ni planta. Puede que sea una mano, un fondo u otra cosa que el modelo no reconoce.</Text>
           </View>
         </View>
         <View style={s.notDetectedTipsBox}>
-          <Text style={s.notDetectedTipsTitle}>Para mejorar la detección</Text>
-          <Text style={s.notDetectedTip}>• Acércate al producto, ocupa el centro</Text>
-          <Text style={s.notDetectedTip}>• Buena iluminación, mejor luz natural</Text>
-          <Text style={s.notDetectedTip}>• Enfoque nítido, sin fondo desordenado</Text>
+          <Text style={s.notDetectedTipsTitle}>Cómo mejorar la foto</Text>
+          <Text style={s.notDetectedTip}>• Acércate y ocupa el centro</Text>
+          <Text style={s.notDetectedTip}>• Buena luz, preferible natural</Text>
+          <Text style={s.notDetectedTip}>• Enfoque nítido, fondo limpio</Text>
         </View>
       </View>
     );
