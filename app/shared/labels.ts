@@ -36,7 +36,7 @@ export const EXTRA_INFO: Record<LabelKey, ExtraInfo> = {
     aroma:       ['Terroso', 'Cítrico', 'Pino', 'Dulce'],
     consumption: ['Pipa', 'Porro', 'Vaporizador', 'Bong'],
     moderation:  'Empieza con dosis baja. Espera 15 min antes de repetir.',
-    tip:         '💡 El vaporizador preserva mejor los terpenos y reduce el daño pulmonar.',
+    tip:         'El vaporizador preserva mejor los terpenos y reduce el daño pulmonar.',
     cbd:         '0.1% — 2%',
   },
   hash: {
@@ -44,7 +44,7 @@ export const EXTRA_INFO: Record<LabelKey, ExtraInfo> = {
     aroma:       ['Terroso', 'Especiado', 'Dulce', 'Madera'],
     consumption: ['Porro mezclado', 'Pipa', 'Hookah', 'Dab'],
     moderation:  'Alta concentración. Usa cantidades muy pequeñas si eres principiante.',
-    tip:         '💡 El hash marroquí suele tener entre 20-35% THC. El bubble hash puede superar el 50%.',
+    tip:         'El hash marroquí suele tener entre 20-35% THC. El bubble hash puede superar el 50%.',
     cbd:         '1% — 5%',
   },
   other: {
@@ -52,7 +52,7 @@ export const EXTRA_INFO: Record<LabelKey, ExtraInfo> = {
     aroma:       ['Variable'],
     consumption: ['Dab', 'Vaporizador', 'Oral'],
     moderation:  'Los extractos son muy concentrados. Dosis mínimas para empezar.',
-    tip:         '💡 El rosin es el extracto más natural: solo presión y calor, sin solventes.',
+    tip:         'El rosin es el extracto más natural: solo presión y calor, sin solventes.',
     cbd:         'Variable',
   },
   plant: {
@@ -60,7 +60,7 @@ export const EXTRA_INFO: Record<LabelKey, ExtraInfo> = {
     aroma:       ['Verde', 'Herbáceo', 'Floral'],
     consumption: ['No aplica en esta fase'],
     moderation:  'Planta en crecimiento. El THC se desarrolla en floración.',
-    tip:         '💡 Las plantas en pre-cosecha tienen los tricomas más visibles y potentes.',
+    tip:         'Las plantas en pre-cosecha tienen los tricomas más visibles y potentes.',
     cbd:         'Depende de variedad',
   },
 };

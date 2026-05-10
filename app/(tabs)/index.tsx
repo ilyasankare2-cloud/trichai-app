@@ -475,17 +475,17 @@ function ResultCard({ result, cfg, extra, imageUri }: { result: any; cfg: any; e
 
       <Text style={s.description}>{result.description}</Text>
 
-      <Text style={s.sectionTitle}>⚡ Efectos</Text>
+      <Text style={s.sectionTitle}>Efectos</Text>
       <View style={s.badgeRow}>{extra.effects.map((e: string) => <View key={e} style={[s.badge, { borderColor: cfg.color }]}><Text style={[s.badgeText, { color: cfg.color }]}>{e}</Text></View>)}</View>
 
-      <Text style={s.sectionTitle}>👃 Aroma</Text>
+      <Text style={s.sectionTitle}>Aroma</Text>
       <View style={s.badgeRow}>{extra.aroma.map((a: string) => <View key={a} style={[s.badge, { borderColor: '#555' }]}><Text style={[s.badgeText, { color: '#888' }]}>{a}</Text></View>)}</View>
 
-      <Text style={s.sectionTitle}>🔥 Consumo</Text>
+      <Text style={s.sectionTitle}>Consumo</Text>
       <View style={s.badgeRow}>{extra.consumption.map((c: string) => <View key={c} style={[s.badge, { borderColor: '#444' }]}><Text style={[s.badgeText, { color: '#666' }]}>{c}</Text></View>)}</View>
 
       <View style={s.moderationBox}>
-        <Text style={s.moderationTitle}>⚠️ Moderación</Text>
+        <Text style={s.moderationTitle}>Moderación</Text>
         <Text style={s.moderationText}>{extra.moderation}</Text>
       </View>
 
@@ -493,12 +493,12 @@ function ResultCard({ result, cfg, extra, imageUri }: { result: any; cfg: any; e
         <Text style={s.tipText}>{extra.tip}</Text>
       </View>
 
-      <Text style={s.sectionTitle}>🌱 Variedades comunes</Text>
+      <Text style={s.sectionTitle}>Variedades comunes</Text>
       <View style={s.badgeRow}>{result.varieties.map((v: string) => <View key={v} style={[s.badge, { borderColor: cfg.color }]}><Text style={[s.badgeText, { color: cfg.color }]}>{v}</Text></View>)}</View>
 
       {result.visual_traits && (
         <>
-          <Text style={s.sectionTitle}>🔬 Rasgos visuales</Text>
+          <Text style={s.sectionTitle}>Rasgos visuales</Text>
           <View style={s.traitsGrid}>
             <View style={s.traitBox}>
               <Text style={s.traitLabel}>Tricomas</Text>
@@ -524,7 +524,7 @@ function ResultCard({ result, cfg, extra, imageUri }: { result: any; cfg: any; e
         </>
       )}
 
-      <Text style={s.sectionTitle}>📊 Análisis completo</Text>
+      <Text style={s.sectionTitle}>Probabilidades</Text>
       {Object.entries(result.all_probs).map(([key, val]: [string, any]) => (
         <View key={key} style={s.barRow}>
           <Text style={s.barLabel}>{LABELS[key as LabelKey].emoji} {LABELS[key as LabelKey].text}</Text>
