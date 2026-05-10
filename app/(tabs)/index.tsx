@@ -385,17 +385,20 @@ export default function HomeScreen() {
 }
 
 function ResultCard({ result, cfg, extra, imageUri }: { result: any; cfg: any; extra: any; imageUri?: string }) {
-  const [thcOpen, setThcOpen] = useState(false);
+  const [thcOpen, setThcOpen]   = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [techOpen, setTechOpen] = useState(false);
   const thcDetail = interpretThc(result);
-  const toggleThc = () => {
-    if (!thcDetail) return;
+  const animateNext = () => {
     LayoutAnimation.configureNext({
-      duration: 280,
+      duration: 250,
       create:  { type: 'easeInEaseOut', property: 'opacity' },
       update:  { type: 'easeInEaseOut' },
     });
-    setThcOpen(o => !o);
   };
+  const toggleThc  = () => { if (!thcDetail) return; animateNext(); setThcOpen(o => !o); };
+  const toggleMore = () => { animateNext(); setMoreOpen(o => !o); };
+  const toggleTech = () => { animateNext(); setTechOpen(o => !o); };
   if (result.label === 'other') {
     return (
       <View style={[s.result, { borderColor: palette.border }]}>
@@ -475,63 +478,82 @@ function ResultCard({ result, cfg, extra, imageUri }: { result: any; cfg: any; e
 
       <Text style={s.description}>{result.description}</Text>
 
-      <Text style={s.sectionTitle}>Efectos</Text>
-      <View style={s.badgeRow}>{extra.effects.map((e: string) => <View key={e} style={[s.badge, { borderColor: cfg.color }]}><Text style={[s.badgeText, { color: cfg.color }]}>{e}</Text></View>)}</View>
-
-      <Text style={s.sectionTitle}>Aroma</Text>
-      <View style={s.badgeRow}>{extra.aroma.map((a: string) => <View key={a} style={[s.badge, { borderColor: '#555' }]}><Text style={[s.badgeText, { color: '#888' }]}>{a}</Text></View>)}</View>
-
-      <Text style={s.sectionTitle}>Consumo</Text>
-      <View style={s.badgeRow}>{extra.consumption.map((c: string) => <View key={c} style={[s.badge, { borderColor: '#444' }]}><Text style={[s.badgeText, { color: '#666' }]}>{c}</Text></View>)}</View>
-
+      {/* Lvl 4 — Aviso obligatorio (siempre visible) */}
       <View style={s.moderationBox}>
         <Text style={s.moderationTitle}>Moderación</Text>
         <Text style={s.moderationText}>{extra.moderation}</Text>
       </View>
 
-      <View style={s.tipBox}>
-        <Text style={s.tipText}>{extra.tip}</Text>
-      </View>
+      {/* Lvl 3 — Más detalle (colapsable) */}
+      <TouchableOpacity activeOpacity={0.7} onPress={toggleMore} style={s.disclosureBtn} accessibilityRole="button" accessibilityState={{ expanded: moreOpen }}>
+        <Text style={s.disclosureLabel}>Más detalle</Text>
+        <Text style={[s.disclosureChevron, moreOpen && { transform: [{ rotate: '180deg' }] }]}>▾</Text>
+      </TouchableOpacity>
+      {moreOpen && (
+        <View style={s.disclosureInner}>
+          <Text style={s.sectionTitle}>Efectos</Text>
+          <View style={s.badgeRow}>{extra.effects.map((e: string) => <View key={e} style={[s.badge, { borderColor: cfg.color }]}><Text style={[s.badgeText, { color: cfg.color }]}>{e}</Text></View>)}</View>
 
-      <Text style={s.sectionTitle}>Variedades comunes</Text>
-      <View style={s.badgeRow}>{result.varieties.map((v: string) => <View key={v} style={[s.badge, { borderColor: cfg.color }]}><Text style={[s.badgeText, { color: cfg.color }]}>{v}</Text></View>)}</View>
+          <Text style={s.sectionTitle}>Aroma</Text>
+          <View style={s.badgeRow}>{extra.aroma.map((a: string) => <View key={a} style={[s.badge, { borderColor: '#555' }]}><Text style={[s.badgeText, { color: '#888' }]}>{a}</Text></View>)}</View>
 
-      {result.visual_traits && (
-        <>
-          <Text style={s.sectionTitle}>Rasgos visuales</Text>
-          <View style={s.traitsGrid}>
-            <View style={s.traitBox}>
-              <Text style={s.traitLabel}>Tricomas</Text>
-              <Text style={s.traitValue}>{result.visual_traits.trichomes}</Text>
-              <Text style={s.traitSub}>{result.visual_traits.trichome_coverage.toFixed(1)}% cobertura</Text>
-            </View>
-            <View style={s.traitBox}>
-              <Text style={s.traitLabel}>Textura</Text>
-              <Text style={s.traitValue}>{result.visual_traits.texture}</Text>
-              <Text style={s.traitSub}>Rugosidad {result.visual_traits.roughness.toFixed(0)}/100</Text>
-            </View>
-            <View style={s.traitBox}>
-              <Text style={s.traitLabel}>Curación</Text>
-              <Text style={s.traitValue}>{result.visual_traits.cure}</Text>
-              <Text style={s.traitSub}>Brillo {result.visual_traits.brightness.toFixed(0)}%</Text>
-            </View>
-            <View style={s.traitBox}>
-              <Text style={s.traitLabel}>Color base</Text>
-              <View style={[s.colorDot, { backgroundColor: `rgb(${result.visual_traits.dominant_color.join(',')})` }]} />
-              <Text style={s.traitSub}>RGB dominante</Text>
-            </View>
+          <Text style={s.sectionTitle}>Consumo</Text>
+          <View style={s.badgeRow}>{extra.consumption.map((c: string) => <View key={c} style={[s.badge, { borderColor: '#444' }]}><Text style={[s.badgeText, { color: '#666' }]}>{c}</Text></View>)}</View>
+
+          <Text style={s.sectionTitle}>Variedades comunes</Text>
+          <View style={s.badgeRow}>{result.varieties.map((v: string) => <View key={v} style={[s.badge, { borderColor: cfg.color }]}><Text style={[s.badgeText, { color: cfg.color }]}>{v}</Text></View>)}</View>
+
+          <View style={s.tipBox}>
+            <Text style={s.tipText}>{extra.tip}</Text>
           </View>
-        </>
+        </View>
       )}
 
-      <Text style={s.sectionTitle}>Probabilidades</Text>
-      {Object.entries(result.all_probs).map(([key, val]: [string, any]) => (
-        <View key={key} style={s.barRow}>
-          <Text style={s.barLabel}>{LABELS[key as LabelKey].emoji} {LABELS[key as LabelKey].text}</Text>
-          <View style={s.barBg}><View style={[s.barFill, { width: `${(val * 100).toFixed(0)}%` as any, backgroundColor: LABELS[key as LabelKey].color }]} /></View>
-          <Text style={s.barVal}>{(val * 100).toFixed(1)}%</Text>
+      {/* Lvl 5 — Análisis técnico (colapsable) */}
+      <TouchableOpacity activeOpacity={0.7} onPress={toggleTech} style={s.disclosureBtn} accessibilityRole="button" accessibilityState={{ expanded: techOpen }}>
+        <Text style={s.disclosureLabel}>Análisis técnico</Text>
+        <Text style={[s.disclosureChevron, techOpen && { transform: [{ rotate: '180deg' }] }]}>▾</Text>
+      </TouchableOpacity>
+      {techOpen && (
+        <View style={s.disclosureInner}>
+          {result.visual_traits && (
+            <>
+              <Text style={s.sectionTitle}>Rasgos visuales</Text>
+              <View style={s.traitsGrid}>
+                <View style={s.traitBox}>
+                  <Text style={s.traitLabel}>Tricomas</Text>
+                  <Text style={s.traitValue}>{result.visual_traits.trichomes}</Text>
+                  <Text style={s.traitSub}>{result.visual_traits.trichome_coverage.toFixed(1)}% cobertura</Text>
+                </View>
+                <View style={s.traitBox}>
+                  <Text style={s.traitLabel}>Textura</Text>
+                  <Text style={s.traitValue}>{result.visual_traits.texture}</Text>
+                  <Text style={s.traitSub}>Rugosidad {result.visual_traits.roughness.toFixed(0)}/100</Text>
+                </View>
+                <View style={s.traitBox}>
+                  <Text style={s.traitLabel}>Curación</Text>
+                  <Text style={s.traitValue}>{result.visual_traits.cure}</Text>
+                  <Text style={s.traitSub}>Brillo {result.visual_traits.brightness.toFixed(0)}%</Text>
+                </View>
+                <View style={s.traitBox}>
+                  <Text style={s.traitLabel}>Color base</Text>
+                  <View style={[s.colorDot, { backgroundColor: `rgb(${result.visual_traits.dominant_color.join(',')})` }]} />
+                  <Text style={s.traitSub}>RGB dominante</Text>
+                </View>
+              </View>
+            </>
+          )}
+
+          <Text style={s.sectionTitle}>Probabilidades</Text>
+          {Object.entries(result.all_probs).map(([key, val]: [string, any]) => (
+            <View key={key} style={s.barRow}>
+              <Text style={s.barLabel}>{LABELS[key as LabelKey].emoji} {LABELS[key as LabelKey].text}</Text>
+              <View style={s.barBg}><View style={[s.barFill, { width: `${(val * 100).toFixed(0)}%` as any, backgroundColor: LABELS[key as LabelKey].color }]} /></View>
+              <Text style={s.barVal}>{(val * 100).toFixed(1)}%</Text>
+            </View>
+          ))}
         </View>
-      ))}
+      )}
     </View>
   );
 }
@@ -625,6 +647,11 @@ const s = StyleSheet.create({
   thcDetailItemSub:   { color: '#555', fontSize: 12 },
   thcDetailText:      { color: '#ccc', fontSize: 13, marginBottom: 14, lineHeight: 20 },
   thcDetailDisclaimer:{ color: '#555', fontSize: 11, fontStyle: 'italic' },
+
+  disclosureBtn:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14, borderTopWidth: 1, borderTopColor: '#1a1a1a' },
+  disclosureLabel:  { color: '#ccc', fontSize: 14, fontWeight: '500', letterSpacing: -0.1 },
+  disclosureChevron:{ color: '#555', fontSize: 14 },
+  disclosureInner:  { paddingTop: 4, paddingBottom: 8 },
   description:        { color: '#888', fontSize: 13, marginBottom: 12, lineHeight: 20 },
   sectionTitle:       { color: '#666', fontSize: 11, fontWeight: '600', marginBottom: 8, marginTop: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
   badgeRow:           { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
