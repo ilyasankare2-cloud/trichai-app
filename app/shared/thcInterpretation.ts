@@ -60,8 +60,9 @@ export function interpretThc(result: any): ThcInterpretation {
   }
 
   if (result.label === 'hash') {
-    const uniformity = uniformityFromRoughness(v.roughness);
-    const green      = hasGreenTint(v.dominant_color);
+    // Use backend-computed fields when available (TD-015); fall back to client heuristics.
+    const uniformity = v.uniformity ?? uniformityFromRoughness(v.roughness);
+    const green      = v.green_tint ?? hasGreenTint(v.dominant_color);
     const traits: ThcTrait[] = [
       { key: 'color',   label: 'Color',        value: colorName(v.dominant_color), sub: '—' },
       { key: 'uniform', label: 'Uniformidad',  value: uniformity, sub: `rugosidad ${v.roughness.toFixed(0)}/100` },
