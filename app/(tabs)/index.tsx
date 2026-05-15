@@ -11,6 +11,7 @@ import { LABELS, EXTRA_INFO, CONTRIB_LABELS, LabelKey } from '../shared/labels';
 import { palette } from '../shared/theme';
 import { compressImage } from '../shared/compressImage';
 import { interpretThc } from '../shared/thcInterpretation';
+import { FeedbackPrompt } from '../components/FeedbackPrompt';
 
 // Enable LayoutAnimation on Android (no-op on iOS)
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -325,11 +326,9 @@ export default function HomeScreen() {
             <Text style={s.analyzeBtnText}>↑ Compartir resultado</Text>
           </TouchableOpacity>
         )}
-        <TouchableOpacity style={s.analyzeBtn} onPress={reset}><Text style={s.analyzeBtnText}>📷 Analizar otra foto</Text></TouchableOpacity>
+        <TouchableOpacity style={s.analyzeBtn} onPress={reset}><Text style={s.analyzeBtnText}>Analizar otra foto</Text></TouchableOpacity>
         {!isNotDetected && (
-          <TouchableOpacity style={s.secondaryBtn} onPress={() => setScreen('contribute')}>
-            <Text style={s.secondaryBtnText}>¿Resultado incorrecto? Corrígelo →</Text>
-          </TouchableOpacity>
+          <FeedbackPrompt image={image} result={result} />
         )}
         {history.length > 0 && (
           <TouchableOpacity style={s.historyBtnRow} onPress={() => setScreen('history')}>
