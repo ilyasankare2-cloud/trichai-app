@@ -301,7 +301,7 @@ export default function HomeScreen() {
       `CBD típico: ${extra.cbd}`,
       `Efectos: ${extra.effects.join(', ')}`,
       res.visual_traits ? `Tricomas: ${res.visual_traits.trichomes}  ·  Textura: ${res.visual_traits.texture}` : '',
-      `\nAnaliza la tuya gratis → https://phytolens-frontend.vercel.app`,
+      `\nAnaliza la tuya gratis → https://trichai.xyz`,
     ].filter(Boolean).join('\n');
     try {
       await Share.share({ message: text, title: `TrichAI — ${res.display}` });
