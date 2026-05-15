@@ -35,7 +35,6 @@ jobs:
   audit:
     name: Security audit
     runs-on: ubuntu-latest
-    continue-on-error: true  # informational
     steps:
       - uses: actions/checkout@v4
 
@@ -49,4 +48,7 @@ jobs:
         run: npm ci
 
       - name: npm audit
+        # Informational only: step-level continue-on-error keeps job green.
+        # Job-level only stops the workflow from failing but leaves red X.
         run: npm audit --audit-level=high
+        continue-on-error: true
